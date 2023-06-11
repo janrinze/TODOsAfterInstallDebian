@@ -47,3 +47,18 @@ plank >/dev/null 2>&1 &
 ```
 
 replace the command in the session settings to use `startplank 2` instead of `plank`.
+
+## Fonts too small on 4K monitor
+add a file `.Xresources` to your home directory containing:
+```
+Xft.dpi: 192
+
+! These might also be useful depending on your monitor and personal preference:
+Xft.autohint: 0
+Xft.lcdfilter:  lcddefault
+Xft.hintstyle:  hintfull
+Xft.hinting: 1
+Xft.antialias: 1
+Xft.rgba: rgb
+
+```
