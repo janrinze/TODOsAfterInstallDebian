@@ -1,8 +1,10 @@
-# TODOsAfterInstallDebian testing/bookworm on Aarch64
+# TODOs after installing Debian testing/bookworm on Aarch64
+
+In general LXQT or LXDE is a good alternative for lightweight desktops.
 
 ## Libre Office under LXQT is extremely slow
 ### solution:
-Add SAL_USE_VCLPLUGIN=qt5 to /usr/share/lxqt/session.conf under the category [Environment]
+Add `SAL_USE_VCLPLUGIN=qt5` to `/usr/share/lxqt/session.conf` under the category `[Environment]`
 
 ## Default utillities are missing
 ```
@@ -31,7 +33,7 @@ iface wlan0 inet dhcp
 
 ## Plank has sometimes trouble starting
 
-add a file /usr/bin/startplank :
+add a file `/usr/bin/startplank` :
 ```
 #! /bin/bash
 
