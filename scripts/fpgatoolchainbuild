@@ -1,0 +1,74 @@
+#!/bin/bash
+function failed() {
+	echo "FAILED"
+	exit
+}
+read junk total used AVAIL shared buffers cached junk <<< $( free -g  | grep ^Mem )
+date
+echo $AVAIL "GB mem available"
+let NUM_PROC=4
+[ -f /usr/bin/nproc ] && let NUM_PROC=`/usr/bin/nproc`
+
+let "MAX_PROC = $AVAIL / 5"
+if [ $NUM_PROC -gt $MAX_PROC ]; then
+   NUM_PROC=$MAX_PROC 
+fi
+
+echo "using number of processors:" $NUM_PROC
+
+# ensure all libraries are there
+echo "Ensure dependencies are available"
+
+sudo apt install libboost-dev libboost-filesystem-dev \
+	libboost-thread-dev libboost-program-options-dev libboost-iostreams-dev \
+	libboost-dev build-essential clang bison flex libreadline-dev \
+	gawk tcl-dev libffi-dev git mercurial graphviz xdot pkg-config python3 \
+	libftdi-dev python3-dev libboost-all-dev cmake libeigen3-dev libboost-mpi-dev \
+	libboost-mpi-python-dev || failed
+# qt5-default
+
+BUILDSTAMP="$( date '+/buildtemp_%d%m%y_%H%M%S' )"
+BUILDDIR=$HOME$BUILDSTAMP
+echo "Building FPGA toolchain in " $BUILDDIR
+
+echo "# create temporary build directory"
+mkdir -p $BUILDDIR || failed
+
+echo "# Checkout sources"
+cd $BUILDDIR
+git clone --depth 1 --recursive https://github.com/cliffordwolf/icestorm.git icestorm || failed
+git clone --depth 1 --recursive https://github.com/YosysHQ/nextpnr nextpnr-ice40 || failed
+git clone --depth 1 --recursive https://github.com/YosysHQ/prjtrellis prjtrellis || failed
+git clone --depth 1 --recursive https://github.com/YosysHQ/nextpnr nextpnr-ecp5 || failed
+git clone --depth 1 --recursive https://github.com/cliffordwolf/yosys.git yosys || failed
+
+
+echo "# build IceStorm"
+cd $BUILDDIR/icestorm  || failed
+make -j$NUM_PROC  || failed
+sudo make install  || failed
+
+echo "# build prjtrellis"
+cd $BUILDDIR/prjtrellis/libtrellis
+cmake -DCMAKE_INSTALL_PREFIX=/usr .
+make -j$NUM_PROC  || failed
+sudo make install || failed
+
+echo "# build nextpnr-ice40"
+cd $BUILDDIR/nextpnr-ice40 || failed
+cmake -DARCH=ice40 -DCMAKE_INSTALL_PREFIX=/usr/local  -DBUILD_PYTHON=OFF -DBUILD_GUI=OFF -DUSE_OPENMP=ON .  || failed
+make -j$NUM_PROC  || failed
+sudo make install  || failed
+
+echo "build nextpnr-ecp5"
+cd $BUILDDIR/nextpnr-ecp5  || failed
+cmake -DARCH=ecp5 -DTRELLIS_INSTALL_PREFIX=/usr -DBUILD_PYTHON=OFF -DBUILD_GUI=OFF -DUSE_OPENMP=ON .  || failed
+make -j$NUM_PROC  || failed
+sudo make install  || failed
+
+echo "# build yosys"
+cd $BUILDDIR/yosys  || failed
+make CONFIG=gcc -j$NUM_PROC  || failed
+sudo make install  || failed
+date
+echo "BUILD SUCCESSFUL"
