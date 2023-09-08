@@ -62,3 +62,17 @@ Xft.antialias: 1
 Xft.rgba: rgb
 
 ```
+
+## Disable side search in chrome
+https://www.reddit.com/r/chrome/comments/15hgvim/comment/jvssn5d/
+```
+enigmamonkey
+28 days ago
+Now you have to trigger 3 goddamned flags. It's just getting shittier and shittier.
+
+Side search
+
+Search web in side panel
+
+And now: CSC
+```
